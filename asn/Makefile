@@ -23,6 +23,7 @@ NESTED_ASNO_VERSION:=$(shell cd $(ASNO_DIR) \
 ASNO_IMAGE_NAME:=$(ORG)/asno:$(NESTED_ASNO_VERSION)
 ASNO_DOCKER_RUN=docker run \
 						--rm \
+						--net=host \
 						-e AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION) \
 						-e AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID) \
 						-e AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY) \
@@ -32,6 +33,7 @@ ASNO_DOCKER_RUN=docker run \
 
 MERGE_YAML_RUN=docker run \
 						--rm \
+						--net=host \
 						-v $(HOST_VARIABLES_DIR):$(ASNO_VARIABLES_DIR) \
 						-v $(HOST_OUTPUT_DIR):$(ASNO_OUTPUT_DIR) \
 						-i node:7
@@ -45,7 +47,7 @@ asno-debug-shell:
 		-ti $(ASNO_IMAGE_NAME)
 
 asno-binary:
-	cd $(ASNO_DIR) && make VERSION=$(NESTED_ASNO_VERSION) PROJECT_DIR=$(ASNO_DIR) image
+	cd $(ASNO_DIR) && make VERSION=$(NESTED_ASNO_VERSION) PROJECT_DIR=$(ASNO_DIR) check-image
 
 NAME_TAG:=$(STACK_NAME)
 STACK_DESCRIPTION:=$(TEMPLATE)-$(VARIABLES)-$(ENV)

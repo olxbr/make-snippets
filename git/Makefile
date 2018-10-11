@@ -1,5 +1,8 @@
 # EXPORTS git related variables
-#
+
+# Default git branch
+GIT_BRANCH?=origin/master
+
 # points to a commit hash 
 COMMIT_HASH=$(shell git rev-parse --short=7 HEAD)
 

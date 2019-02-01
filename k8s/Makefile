@@ -3,7 +3,6 @@ $(if $(value ENV),,$(error "ENV is required for k8s/Makefile"))
 $(if $(value IMAGE_NAME),,$(error "IMAGE_NAME is required for k8s/Makefile"))
 $(if $(value DEPLOY_NAME),,$(error "DEPLOY_NAME is required for k8s/Makefile"))
 $(if $(value VERSION),,$(error "VERSION is required for k8s/Makefile"))
-$(if $(value CLUSTER_NAME),,$(error "CLUSTER_NAME is required for k8s/Makefile"))
 
 EXTRA_K8S_ARGS?=
 
@@ -20,7 +19,8 @@ K8S_DIST_DIR:=$(K8S_TMPL_DIR)/dist
 
 K8S_TOKEN?=$(shell if [[ "$(ENV)" == "prod" ]] ; then echo $(K8S_SEARCH_TOKEN_PROD) ; else echo $(K8S_SEARCH_TOKEN_QA) ; fi)
 
-KUBECTL_SEARCH:=kubectl -n search -s $(CLUSTER_NAME) --token=$(K8S_TOKEN) --insecure-skip-tls-verify
+K8S_NAMESPACE?=search
+KUBECTL_CMD:=kubectl -n $(K8S_NAMESPACE) -s $(K8S_CLUSTER) --token=$(K8S_TOKEN) --insecure-skip-tls-verify
 
 K8S_OVERRIDES?=$(shell if [[ -f $(K8S_DIST_DIR)/overrides.json ]] ; then echo "--overrides='"; cat $(K8S_DIST_DIR)/overrides.json; echo "'" ; else echo "" ; fi)
 
@@ -35,24 +35,27 @@ process-templates-inline: dist-path
 
 process-full-templates: process-templates
 	$(ENVSUBST_RUN) < $(K8S_TMPL_DIR)/service.yaml.tmpl > $(K8S_DIST_DIR)/service.yaml ; \
-	$(ENVSUBST_RUN) < $(K8S_TMPL_DIR)/ingress.yaml.tmpl > $(K8S_DIST_DIR)/ingress.yaml ;
+	$(ENVSUBST_RUN) < $(K8S_TMPL_DIR)/ingress.yaml.tmpl > $(K8S_DIST_DIR)/ingress.yaml
 
-deploy-k8s: validate-image process-templates
-	$(KUBECTL_SEARCH) apply --record -f $(K8S_DIST_DIR)/deployment.yaml
+deploy-k8s: check-k8s-cluster-var validate-image process-templates
+	$(KUBECTL_CMD) apply --record -f $(K8S_DIST_DIR)/deployment.yaml
 
-deploy-full-k8s: process-full-templates deploy-k8s
-	$(KUBECTL_SEARCH) apply --record -f $(K8S_DIST_DIR)/service.yaml ; \
-	$(KUBECTL_SEARCH) apply --record -f $(K8S_DIST_DIR)/ingress.yaml ; \
+deploy-full-k8s: check-k8s-cluster-var process-full-templates deploy-k8s
+	$(KUBECTL_CMD) apply --record -f $(K8S_DIST_DIR)/service.yaml ; \
+	$(KUBECTL_CMD) apply --record -f $(K8S_DIST_DIR)/ingress.yaml
 
-destroy-k8s:
-	$(KUBECTL_SEARCH) delete deploy ${DEPLOY_NAME} ;
+destroy-k8s: check-k8s-cluster-var
+	$(KUBECTL_CMD) delete deploy ${DEPLOY_NAME}
 
-destroy-full-k8s: destroy-k8s
-	$(KUBECTL_SEARCH) delete service ${DEPLOY_NAME}-service ; \
-	$(KUBECTL_SEARCH) delete ingress ${DEPLOY_NAME}-ingress ;
+destroy-full-k8s: check-k8s-cluster-var destroy-k8s
+	$(KUBECTL_CMD) delete service ${DEPLOY_NAME}-service ; \
+	$(KUBECTL_CMD) delete ingress ${DEPLOY_NAME}-ingress
 
-run-k8s:
-	$(KUBECTL_SEARCH) run $(DEPLOY_NAME) --image=$(IMAGE_NAME) -i --rm --restart=Never $(K8S_RUN_ARGS) $(K8S_OVERRIDES)
+run-k8s: check-k8s-cluster-var
+	$(KUBECTL_CMD) run $(DEPLOY_NAME) --image=$(IMAGE_NAME) -i --rm --restart=Never $(K8S_RUN_ARGS) $(K8S_OVERRIDES)
 
-logs-k8s:
-	$(KUBECTL_SEARCH) logs $(DEPLOY_NAME) -f
+logs-k8s: check-k8s-cluster-var
+	$(KUBECTL_CMD) logs $(DEPLOY_NAME) -f
+
+check-k8s-cluster-var:
+	$(if $(value K8S_CLUSTER),,$(error "K8S_CLUSTER is required for k8s/Makefile"))

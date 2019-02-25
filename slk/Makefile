@@ -20,16 +20,16 @@ notify-pipeline-deploy: set-slk-hook
 
 
 notify-success-deploy: SLK_ICON?=cfn
-notify-success-deploy: set-slk-hook slk-deploy-url aws-default-region
+notify-success-deploy: set-slk-hook slk-deploy-url
 	curl -X POST -H 'Content-type: application/json' \
-		--data '{"text": "@$(SLK_USER_GROUP) stack *$(DEPLOY_NAME)* in *$(AWS_DEFAULT_REGION)* with *$(ENV)* using image version *$(IMAGE_NAME)* was deployed successfully. More details <$(SLK_DEPLOY_URL)|here>", "channel": "#$(SLK_CHANNEL)", "username": "@$(PROJECT_NAME)-deploy", "icon_emoji": ":$(SLK_ICON):"}' \
+		--data '{"text": "@$(SLK_USER_GROUP) stack *$(DEPLOY_NAME)* with *$(ENV)* using image version *$(IMAGE_NAME)* was deployed successfully. More details <$(SLK_DEPLOY_URL)|here>", "channel": "#$(SLK_CHANNEL)", "username": "@$(PROJECT_NAME)-deploy", "icon_emoji": ":$(SLK_ICON):"}' \
 		$(SLK_HOOK)
 
 
 notify-success-teardown: SLK_ICON?=cfn
-notify-success-teardown: set-slk-hook aws-default-region slk-token
+notify-success-teardown: set-slk-hook slk-token
 	curl -X POST -H 'Content-type: application/json' \
-		--data '{"text": "@$(SLK_USER_GROUP) stack *$(DEPLOY_NAME)* in *$(AWS_DEFAULT_REGION)* with *$(ENV)* was teardown successfully. More details <$(SLK_DEPLOY_URL)|here>", "channel": "#$(SLK_CHANNEL)", "username": "@$(PROJECT_NAME)-teardown", "icon_emoji": ":$(SLK_ICON):"}' \
+		--data '{"text": "@$(SLK_USER_GROUP) stack *$(DEPLOY_NAME)* with *$(ENV)* was teardown successfully. More details <$(SLK_DEPLOY_URL)|here>", "channel": "#$(SLK_CHANNEL)", "username": "@$(PROJECT_NAME)-teardown", "icon_emoji": ":$(SLK_ICON):"}' \
 		$(SLK_HOOK)
 
 set-slk-hook: slk-token
@@ -40,6 +40,3 @@ slk-deploy-url:
 
 slk-token:
 	$(if $(value SLK_TOKEN),,$(error "SLK_TOKEN is required for slk/Makefile"))
-
-aws-default-region:
-	$(if $(value AWS_DEFAULT_REGION),,$(error "AWS_DEFAULT_REGION is required for slk/Makefile"))

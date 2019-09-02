@@ -49,7 +49,7 @@ export DOCKERHOST=$(shell ifconfig |\
 	cut -f2 -d: |\
 	head -n1)
 
-DOCKER_LOGIN:=docker login -p "$(DOCKERHUB_PASSWORD)" -u "$(DOCKERHUB_USER)"
+DOCKER_LOGIN:=docker login -p "$(DOCKER_PASSWORD)" -u "$(DOCKER_USER)"
 
 # makes the image
 image: artifact

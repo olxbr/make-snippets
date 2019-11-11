@@ -6,11 +6,15 @@ $(if $(value VERSION),,$(error "VERSION is required for k8s/Makefile"))
 
 EXTRA_K8S_ARGS?=
 
-ENVSUBST_RUN:= ENV=$(ENV) \
+DEFAULT_K8S_REPLICAS:=1
+REPLICAS:=$(DEFAULT_K8S_REPLICAS)
+
+ENVSUBST_RUN?= ENV=$(ENV) \
 	IMAGE_NAME=$(IMAGE_NAME) \
 	RUN_OPTS='$(RUN_OPTS)' \
 	DEPLOY_NAME=$(DEPLOY_NAME) \
 	VERSION=$(VERSION) \
+	REPLICAS=$(REPLICAS) \
 	$(EXTRA_K8S_ARGS) \
 	envsubst
 
@@ -27,10 +31,10 @@ K8S_OVERRIDES?=$(shell if [[ -f $(K8S_DIST_DIR)/overrides.json ]] ; then echo "-
 dist-path:
 	mkdir -p $(K8S_DIST_DIR)
 
-process-templates: dist-path
+process-templates: replicas dist-path
 	$(ENVSUBST_RUN) < $(K8S_TMPL_DIR)/deployment.yaml.tmpl > $(K8S_DIST_DIR)/deployment.yaml
 
-process-templates-inline: dist-path
+process-templates-inline: replicas dist-path
 	$(ENVSUBST_RUN) < $(K8S_TMPL_DIR)/overrides.json.tmpl > $(K8S_DIST_DIR)/overrides.json
 
 process-full-templates: process-templates
@@ -59,3 +63,7 @@ logs-k8s: check-k8s-cluster-var
 
 check-k8s-cluster-var:
 	$(if $(value K8S_CLUSTER),,$(error "K8S_CLUSTER is required for k8s/Makefile"))
+
+replicas:
+	$(eval REPLICAS=$(shell ${KUBECTL_CMD} describe deployment ${DEPLOY_NAME} | grep Replicas: | awk '{print $$2}'))
+	$(eval REPLICAS=$(shell if [[ ${REPLICAS} -gt 1 ]]; then echo ${REPLICAS}; else echo ${DEFAULT_K8S_REPLICAS}; fi;))

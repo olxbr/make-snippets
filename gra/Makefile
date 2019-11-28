@@ -35,6 +35,10 @@ analise-code: build project-version
 # build target
 build: $(JAVA_ARTIFACT)
 
+# compiling test resources
+compile-test:
+	$(GRADLE_BINARY) compileTestJava
+
 # artifact target
 artifact: build
 

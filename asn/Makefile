@@ -20,7 +20,7 @@ NESTED_ASNO_VERSION:=$(shell cd $(ASNO_DIR) \
 		&& COMMIT_HASH=`git rev-parse --short HEAD` \
 		&& echo `git show --format=%cd --date=format:'%y%m%d.%H%M' $$COMMIT_HASH | head -n 1`-$$COMMIT_HASH)
 
-ASNO_IMAGE_NAME:=$(ORG)/asno:$(NESTED_ASNO_VERSION)
+ASNO_IMAGE_NAME:=$(ORG)/el-asno-alado:$(NESTED_ASNO_VERSION)
 ASNO_DOCKER_RUN=docker run \
 						--rm \
 						--net=host \

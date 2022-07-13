@@ -42,11 +42,11 @@ process-full-templates: process-templates
 	$(ENVSUBST_RUN) < $(K8S_TMPL_DIR)/ingress.yaml.tmpl > $(K8S_DIST_DIR)/ingress.yaml
 
 deploy-k8s: check-k8s-cluster-var process-templates
-	$(KUBECTL_CMD) apply --record -f $(K8S_DIST_DIR)/deployment.yaml
+	$(KUBECTL_CMD) apply -f $(K8S_DIST_DIR)/deployment.yaml
 
 deploy-full-k8s: check-k8s-cluster-var process-full-templates deploy-k8s
-	$(KUBECTL_CMD) apply --record -f $(K8S_DIST_DIR)/service.yaml ; \
-	$(KUBECTL_CMD) apply --record -f $(K8S_DIST_DIR)/ingress.yaml
+	$(KUBECTL_CMD) apply -f $(K8S_DIST_DIR)/service.yaml ; \
+	$(KUBECTL_CMD) apply -f $(K8S_DIST_DIR)/ingress.yaml
 
 destroy-k8s: check-k8s-cluster-var
 	$(KUBECTL_CMD) delete deploy ${DEPLOY_NAME}

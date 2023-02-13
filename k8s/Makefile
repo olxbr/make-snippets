@@ -4,12 +4,11 @@ $(if $(value IMAGE_NAME),,$(error "IMAGE_NAME is required for k8s/Makefile"))
 $(if $(value DEPLOY_NAME),,$(error "DEPLOY_NAME is required for k8s/Makefile"))
 $(if $(value VERSION),,$(error "VERSION is required for k8s/Makefile"))
 
-EXTRA_K8S_ARGS?=
-
-NODE_SELECTOR:=spot
-DEFAULT_K8S_REPLICAS:=1
-REPLICAS:=$(DEFAULT_K8S_REPLICAS)
-PRIORITY_CLASS_NAME:=high-priority
+EXTRA_K8S_ARGS       ?=
+NODE_SELECTOR        ?=spot
+DEFAULT_K8S_REPLICAS ?=1
+REPLICAS             ?=$(DEFAULT_K8S_REPLICAS)
+PRIORITY_CLASS_NAME  ?=high-priority
 
 ENVSUBST_RUN?= ENV=$(ENV) \
 	ROLE=$(ROLE) \
